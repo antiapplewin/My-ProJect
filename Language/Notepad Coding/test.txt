@@ -1,0 +1,2 @@
+print("Hello", "World", end="\n", comma="!")
+print("Life, is so fair")
