@@ -1,0 +1,9 @@
+This Project was been in my head for aboutj 1~1.5 year...
+And Now It's Time to Finish This...
+
+Finished : Input/Output
+
+Working On : Variable
+Up-Coming : List variant
+
+And when I can create game out of it, I'll change this txt file to how to program!
