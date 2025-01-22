@@ -12,7 +12,11 @@ def redrawWindow(win, players) :
     win.fill((255, 255, 255))
     Font = pygame.font.SysFont("arial", 30, True, False)
     for player in players :
-        player.draw(win)
+        if (players.index(player) == 0) :
+            player.draw(win)
+        else :
+            for play in player :
+                play.draw(win)
     players[0].write(win, Font)
     pygame.display.update()
 
@@ -21,16 +25,21 @@ def main() :
     n = Network()
     players = []
     players.append(n.getP())
+    receive = n.send(players[0])
     for i in range(3) :
-        players.append(n.send(players[0]))
+        players.append(receive[0])
     clock = pygame.time.Clock()
-
-    print(players)
 
     while run :
         clock.tick(60)
+        receive = n.send(players[0])
         for i in range(3) :
-            players[i+1] = n.send(players[0])
+            players[i+1] = receive[0]
+
+        message = receive[1]
+        for mess in message :
+            if (mess[2]) :
+                print(f"{mess[0]} : {mess[1]}")
 
         for event in pygame.event.get() :
             if event.type == pygame.QUIT :

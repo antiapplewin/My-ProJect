@@ -17,8 +17,10 @@ s.listen() # No Argument : Unlimited
 print("Waiting For a Connection, Server Started")
 
 players = [] # Player(0, 0, 50, 50, (255, 0, 0), 3, "P1")
+playersChat = [("", "", False), ("", "", False), ("", "", False), ("", "", False)]
 for i in range(4) :
     players.append(Player(0, 0, 50, 50, (0, 255, 0), 5, f"P{i+1}"))
+messageLog = []
 
 def ThreadedClient(conn, player) :
     global currentPlayer
@@ -28,19 +30,33 @@ def ThreadedClient(conn, player) :
         try :
             data = pickle.loads(conn.recv(2048)) # Error Occures -> increase 2048'
             players[player] = data
+            message = players[player].chat()
+
+            mess = ("", "", False)
+            if (message not in messageLog and not(message[2]=="" or message[0]=="")) :
+                messageLog.append(message)
+                mess = (message[2], message[0], True)
+
+            playersChat[player] = mess
 
             if not data :
                 print("Disconnected")
                 currentPlayer -= 1
                 break
             else :
-                if player == 1 :
-                    reply = players[0]
-                else :
-                    reply = players[1]
+                reply = []
+                for i in range(4) :
+                    if player == i :
+                        reply.append([])
+                        reply.append([])
+                        for j in range(4) :
+                            if i!=j :
+                                reply[0].append(players[j])
+                                reply[1].append(playersChat[j])
                 
-                print("Received : ", data)
-                print("Sending : ", reply)
+                if not(mess[0]=="") :
+                    print("Received : ", data)
+                    print("Sending : ", reply)
 
             conn.sendall(pickle.dumps(reply))
         except :
