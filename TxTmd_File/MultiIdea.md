@@ -1,3 +1,14 @@
-목표 :
-1. server.py 파일에서 if (player==1) else 을 4로 고치기
-2. 디테일을 뺀 아주 단순한 채팅 (터미널에 출력) 구현하기
+This is NOT A GOOD Sight<br/>
+Maybe We Need some DELETE
+and start over again
+
+WE NEED TO START OVER
+
+__*Need Fixing*__ : <br/>
+delete "the number game" (for now) <br/>
+Create "*__Master__*" Role <br/>
+Create Random Generator <br/>
+Start Over "*__main2__*" <br/>
+Focus on the server (most of the Calculations)
+
+When the code got settled<br/> I'll continue my multiplayer project!
