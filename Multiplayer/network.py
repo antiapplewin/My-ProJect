@@ -1,10 +1,11 @@
 import socket
 import pickle
+from IPsafe import IPSafe
 
 class Network :
-    def __init__(self) :
+    def __init__(self, IPtool) :
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server = "192.168.0.50"
+        self.server = IPSafe().GetIP(IPtool)
         self.port = 28578
         self.addr = (self.server, self.port)
         self.p = self.connect()
