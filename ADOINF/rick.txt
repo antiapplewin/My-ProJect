@@ -1,3 +1,0 @@
-name:NeverGonnaGiveYouUp bpm:135 background:rick.png music:nggyu.mp3 difficulty:2 end:100
-
-angle:180,color:127127127,dirchange:0,bpmchange:0,chkpoint:0, angle:180,color:127127127,dirchange:0,bpmchange:0,chkpoint:1, angle:180,color:127127127,dirchange:0,bpmchange:0,chkpoint:0, end:100

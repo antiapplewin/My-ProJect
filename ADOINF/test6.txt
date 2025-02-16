@@ -1,3 +1,0 @@
-bpm:125 image:apple.png name:wow2 difficulty:12 end:100
-
-apple:1,king:2, apple:3,king:4, end:100
