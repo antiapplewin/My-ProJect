@@ -5,10 +5,11 @@ and start over again
 WE NEED TO START OVER
 
 __*Need Fixing*__ : <br/>
-delete "the number game" (for now) <br/>
-Create "*__Master__*" Role <br/>
 Create Random Generator <br/>
-Start Over "*__main2__*" <br/>
 Focus on the server (most of the Calculations)
+
+__*Note*__ : <br/>
+Yeah, about 5 days with BOJ <br/>
+when I came back I thought to change A LOT
 
 When the code got settled<br/> I'll continue my multiplayer project!
