@@ -3,26 +3,36 @@ class PlayerInfo :
         self.playerInfo = {}
         self.playerInfo['CurrentKey'] = []
         self.playerInfo['Nickname'] = f"P{PN+1}"
-        self.playerInfo['message'] = (f"P{PN+1}", 0, "") # Nick/time/prompt
+        self.playerInfo['message'] = (1, "")
+        self.playerInfo['ServerRecv'] = {'card':[], 'cardsImg':""}
 
     def update(self, content) :
-        RightSave = ['CurrentKey', 'message']
+        RightSave = ['CurrentKey']
+        ServerRecvList = ['card', 'cardsImg']
 
         for k, v in content.items() :
-            if k in RightSave :
-                self[k] = v
+            try :
+                if k in RightSave :
+                    self.playerInfo[k] = v
+                if k in ServerRecvList :
+                    self.playerInfo['ServerRecv'][k] = v
+            except Exception as e :
+                print(e)
 
     def RecvInfo(self, key) :
         try :
             return self.playerInfo[key]
-        except :
-            print("error happend")
+        except Exception as e:
+            print(e)
 
     def RecvData(self) :
         recvdata = {}
-        recvDataList = ['message']
+        recvDataList = ['Nickname', 'message']
 
         for item in recvDataList :
             recvdata[item] = self.RecvInfo(item)
 
         return recvdata
+    
+    def RecvPlayer(self) :
+        return self.playerInfo

@@ -39,26 +39,64 @@ class Code :
     def ProgramedType(self, line, strings) : # OutPut System Finish
         if (line[:5]=="print") :
             if (line[5]=="(" and line[len(line)-1]==")") :
-                endindex = -4
-                endstring = ""
-                comindex = -6
-                commastring = " "
-                commaindex = -1
-                endIndex = -1
-                if (line.find("comma=")+1) :
-                    comindex = line.find("comma=")
-                    commaindex = line.count("%s", 0, comindex+4)
-                    commastring = strings[commaindex]
-                if (line.find("end=")+1) :
-                    endindex = line.find("end=")
-                    endIndex = line.count("%s", 0, endindex+4)
-                    endstring = strings[endIndex]
-                for string in strings :
-                    if (commaindex!=-1 and strings.index(string)==commaindex) :
-                        continue
-                    if (endIndex!=-1 and strings.index(string)==endIndex) :
-                        continue
-                    print(string, end="")
-                    if (strings.index(string) != len(strings)-1-(endindex>-1)-(comindex>-1)) :
-                        print(commastring, end="")
-                print(endstring, end="")
+                self.PrintFunction(line, strings)
+        
+        elif (line[:5]=="input") :
+            if (line[5]=="(" and line[len(line)-1]==")") :
+                self.InputFunction(line)
+
+    def PrintFunction(self, line, strings) :
+        endindex = -4
+        endstring = ""
+        comindex = -6
+        commastring = " "
+        commaindex = -1
+        endIndex = -1
+        if (line.find("comma=")+1) :
+            comindex = line.find("comma=")
+            commaindex = line.count("%s", 0, comindex+4)
+            commastring = strings[commaindex]
+        if (line.find("end=")+1) :
+            endindex = line.find("end=")
+            endIndex = line.count("%s", 0, endindex+4)
+            endstring = strings[endIndex]
+        for string in strings :
+            if (commaindex!=-1 and strings.index(string)==commaindex) :
+                continue
+            if (endIndex!=-1 and strings.index(string)==endIndex) :
+                continue
+            print(string, end="")
+            if (strings.index(string) != len(strings)-1-(endindex>-1)-(comindex>-1)) :
+                print(commastring, end="")
+        print(endstring, end="")
+
+    def InputFunction(self, line) : # input(&(varname), (vartype))
+        attributes = []
+        stindex = line.find("(")
+        for i in range(line.count(',')) :
+            attributes.append(line[stindex+1:line.find(",")])
+            stindex = line.find(",")
+        attributes.append(line[stindex+1:line.find(")")])
+
+        temp_var = {"name":"", "value":""}
+        varType = ["int", "float", "string", "str"]
+        varindex = -1
+
+        for attri in attributes :
+            if attri[0] == "&" :
+                temp_var['name'] = attri[1:]
+            elif attri in varType :
+                varindex = varType.index(attri)
+        
+        inputed = input()
+
+        if varindex==0 :
+            inputed = int(inputed)
+        elif varindex==1 :
+            inputed = float(inputed)
+        elif varindex==2 or varindex==3 :
+            inputed = str(inputed)
+        
+        temp_var['value'] = inputed
+
+        print(temp_var)

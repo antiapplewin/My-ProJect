@@ -1,2 +1,3 @@
-print("Hello", "World", end="\n", comma="!")
-print("Life, is so fair")
+print("hello,", "world", comma="", end="\n")
+print("input anything : ")
+input(&var, str)
