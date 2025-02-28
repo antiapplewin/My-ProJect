@@ -17,14 +17,14 @@ class Network : # Client <-> server connect chain
     def connect(self) :
         try :
             self.client.connect(self.addr) # connect
-            return pickle.loads(self.client.recv(2048))
+            return pickle.loads(self.client.recv(4096))
         except :
             pass
 
     def recv(self, data):
         try:
             self.client.send(pickle.dumps(data))
-            data = self.client.recv(2048)
+            data = self.client.recv(4096)
             if not data:  # 서버가 응답하지 않을 경우
                 print("No data received. Connection may be closed.")
                 return None
@@ -32,10 +32,14 @@ class Network : # Client <-> server connect chain
         except socket.error as e:
             print(f"Socket error: {e}")
             return None
+        
+    def temprecv(self, bytes, use_pickle=True) :
+        data = self.client.recv(bytes)
+        return pickle.loads(data) if use_pickle else data
 
     # def send(self, data) :
     #     try :
     #         self.client.send(pickle.dumps(data))
-    #         return pickle.loads(self.client.recv(2048))
+    #         return pickle.loads(self.client.recv(4096))
     #     except socket.error as e :
     #         print(e)

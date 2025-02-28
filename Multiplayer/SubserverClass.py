@@ -4,7 +4,7 @@ class PlayerInfo :
         self.playerInfo['CurrentKey'] = []
         self.playerInfo['Nickname'] = f"P{PN+1}"
         self.playerInfo['message'] = (1, "")
-        self.playerInfo['ServerRecv'] = {'card':[], 'cardsImg':""}
+        self.playerInfo['SR'] = {'card':[], 'cardsImg':""}
 
     def update(self, content) :
         RightSave = ['CurrentKey']
@@ -15,7 +15,7 @@ class PlayerInfo :
                 if k in RightSave :
                     self.playerInfo[k] = v
                 if k in ServerRecvList :
-                    self.playerInfo['ServerRecv'][k] = v
+                    self.playerInfo['SR'][k] = v
             except Exception as e :
                 print(e)
 

@@ -1,4 +1,4 @@
-import socket
+import socket, os
 from _thread import *
 from player import *
 from SubserverClass import *
@@ -58,7 +58,7 @@ class GameServer :
         print(player)
         while True :
             try :
-                data = pickle.loads(conn.recv(2048)) # Error Occures -> increase 2048
+                data = pickle.loads(conn.recv(4096)) # Error Occures -> increase 4096
 
                 if (players[player].RecvInfo('CurrentKey')) :
                     print(f"{player} : {players[player].RecvPlayer()}")
@@ -74,10 +74,10 @@ class GameServer :
                     su.SuffleCard(4)
                     print("!!!")
                     for pl in players :
-                        if (pl.RecvInfo('ServerRecv')['card']==[]) :
+                        if (pl.RecvInfo('SR')['card']==[]) :
                             cards = su.getCard(4)
                             pl.update({"card":cards})
-                        print(pl.RecvInfo('ServerRecv'))
+                        print(pl.RecvInfo('SR'))
                 if ("Kq" in players[player].RecvInfo('CurrentKey')) :
                     players[player].update({"card":[]})
                     su.SetCards()
@@ -105,15 +105,25 @@ gs, su = GameServer, ServerClass.ServerUpdate()
 
 def ThreadedClient(conn, player) :
     global currentPlayer
-    conn.send(pickle.dumps(players[player]))
+    
+    file_size = os.path.getsize("Multiplayer/images/PokerTable.png")
+    conn.send(file_size.to_bytes(4, 'big'))
+
+    print(f"Sending file size (bytes): {file_size}/{file_size.to_bytes(4, 'big')}")
+
+    with open("Multiplayer/images/PokerTable.png", "rb") as f:
+        while chunk := f.read(4096):
+            conn.sendall(chunk)
+        conn.sendall(b"__END__")
+
+    conn.sendall({'self':{}, 'other':{}})
     
     gs.TestPlace(conn, player)
     
     currentPlayer -= 1
 
 def befSet() :
-    with open("Multiplayer/images/PokerTable.png", 'rb') as f :
-        images.append(f.read())
+    pass
 
 befSet()
 

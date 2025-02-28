@@ -3,6 +3,7 @@ import time, io
 import threading
 from network import Network
 from player import *
+from PIL import Image
 
 width, height = 1000, 750
 
@@ -35,24 +36,47 @@ def main() :
     ClientPISend = {'CurrentKey':[], "message":("", 0)}
     keyHistory = []
 
-    recved = n.recv(ClientPISend)
-    print(recved['self']['Nickname'])
+    file_size_bytes = n.temprecv(4, use_pickle=False)
+
+    file_size = int.from_bytes(file_size_bytes, 'big')
+    print(f"Raw received bytes: {file_size_bytes}/{file_size}")  
+
+    print("successed")
+
+    recvedData = file_size_bytes
+    while len(recvedData) < file_size :
+        print(f"Expected: {file_size}, Received: {len(recvedData)}")
+
+        packet = n.temprecv(4096, use_pickle=False)
+        if not packet:
+            break
+
+        # 종료 신호를 받으면 중단
+        if b"__END__" in packet:
+            packet = packet.replace(b"__END__", b"")
+            recvedData += packet
+            break
+        recvedData += packet
+
+    print(f"Expected: {file_size}, Received: {len(recvedData)}")
+
+    image = Image.open(io.BytesIO(recvedData)).convert('RGB')
+    img = pygame.image.fromstring(image.tobytes(), image.size, image.mode)
 
     run = True
     while run :
         # Recv Part
 
         recved = n.recv(ClientPISend)
-        GotPInfo, GotOInfo = recved['self'], recved['other']
+        # GotPInfo, GotOInfo = recved['self'], recved['other']
 
         # print(GotPInfo)
 
-        img = pygame.image.load(io.BytesIO(recved['self']['ServerRecv']['cardsImg']))
         win.blit(img, (0, 0))
 
-        for i in GotOInfo :
-            if (i['message'][1]!="") :
-                print(f"Player : {i['message'][1]}")
+        # for i in GotOInfo :
+        #     if (i['message'][1]!="") :
+        #         print(f"Player : {i['message'][1]}")
 
         for event in pygame.event.get() :
             if event.type == pygame.QUIT :
@@ -61,21 +85,21 @@ def main() :
 
         # Sending Part
 
-        PK = PygameSYS.keyPress()
-        if ("Kt" in PK) :
-            threading.Thread(target=g.ChatInput, args=()).start()
-        if ((PK, int(time.time()*100)/100) not in keyHistory) :
-            keyHistory.append((PK, int(time.time()*100)/100))
-            ClientPISend['CurrentKey'] = PK
-        else :
-            ClientPISend['CurrentKey'] = []
+        # PK = PygameSYS.keyPress()
+        # if ("Kt" in PK) :
+        #     threading.Thread(target=g.ChatInput, args=()).start()
+        # if ((PK, int(time.time()*100)/100) not in keyHistory) :
+        #     keyHistory.append((PK, int(time.time()*100)/100))
+        #     ClientPISend['CurrentKey'] = PK
+        # else :
+        #     ClientPISend['CurrentKey'] = []
 
-        ClientPISend["message"] = g.GetMess()
+        # ClientPISend["message"] = g.GetMess()
 
-        # update code
+        # # update code
         pygame.display.update()
-        keyHistory = SYS.SetTlistSYS(keyHistory, 1)
-        SYS.DisplayGame(win, recved['self']['ServerRecv']['card'])
+        # keyHistory = SYS.SetTlistSYS(keyHistory, 1)
+        # SYS.DisplayGame(win, recved['self']['SR']['card'])
 
 IPtool = input("Input IP : ")
 
