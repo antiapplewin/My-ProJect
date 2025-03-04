@@ -83,7 +83,7 @@ class GameServer :
                     su.SetCards()
                     print(player)
 
-                players[player].update({'cardsImg':images[0]})
+                players[player].update({'showingCard':["CB", "CB", 'CB', 'CB']})
 
                 recvData = {"self":{}, 'other':[]}
 
@@ -106,17 +106,29 @@ gs, su = GameServer, ServerClass.ServerUpdate()
 def ThreadedClient(conn, player) :
     global currentPlayer
     
-    file_size = os.path.getsize("Multiplayer/images/PokerTable.png")
-    conn.send(file_size.to_bytes(4, 'big'))
+    target_folder = "Multiplayer/images"
+    img_paths = [os.path.join(target_folder, f) for f in os.listdir(target_folder) if f.endswith(".png")]
+    print(img_paths)
 
-    print(f"Sending file size (bytes): {file_size}/{file_size.to_bytes(4, 'big')}")
+    for img_path in img_paths :
+        file_size = os.path.getsize(img_path)
+        conn.sendall(file_size.to_bytes(4, "big"))
+        # print(f"전송 중: {img_path} ({file_size} bytes)")
 
-    with open("Multiplayer/images/PokerTable.png", "rb") as f:
-        while chunk := f.read(4096):
-            conn.sendall(chunk)
+        with open(img_path, 'rb') as f :
+            while chunk := f.read(4096) :
+                conn.sendall(chunk)
+                # print(chunk[:16])
+
         conn.sendall(b"__END__")
+        time.sleep(0.1)
 
-    conn.sendall({'self':{}, 'other':{}})
+    time.sleep(0.5)
+    conn.sendall(b"Img_Done")
+    print("Every IMG Send")
+
+    time.sleep(0.5)
+    conn.sendall(pickle.dumps(img_paths))
     
     gs.TestPlace(conn, player)
     

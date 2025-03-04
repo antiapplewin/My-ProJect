@@ -7,6 +7,8 @@ from PIL import Image
 
 width, height = 1000, 750
 
+recvedImg, imagesName = [], []
+
 class SYS :
     def SetTlistSYS(List, ti) :
         t = int(time.time()*100)/100
@@ -17,66 +19,76 @@ class SYS :
         
         return List
     
-    def DisplayGame(win, cards) :
+    def DisplayGame(win, cards, x, y) :
+        global imagesName, recvedImg
         if not(cards == []) :
-            images = []
+            tc = 0
             for card in cards :
-                img = pygame.image.load(f'./Multiplayer/images/{card}.png')
-                img = pygame.transform.scale(img, (img.get_size()[0]*2/3, img.get_size()[1]*2/3))
-                print(img.get_size())
-                images.append(img)
-
-            for i in range(4) :
-                win.blit(images[i], ((width-60-img.get_size()[1])/2+20*i, 600))
+                index = imagesName.index(card+".png")
+                win.blit(recvedImg[index], (x+60*tc, y))
+                tc += 1
 
 def main() :
+    global imagesName, recvedImg
     n = Network(IPtool)
     g = GameSYS()
     ClientP = n.getP()
     ClientPISend = {'CurrentKey':[], "message":("", 0)}
-    keyHistory = []
+    keyHistory, scroll = [], 0
 
-    file_size_bytes = n.temprecv(4, use_pickle=False)
+    image_number = 0
 
-    file_size = int.from_bytes(file_size_bytes, 'big')
-    print(f"Raw received bytes: {file_size_bytes}/{file_size}")  
-
-    print("successed")
-
-    recvedData = file_size_bytes
-    while len(recvedData) < file_size :
-        print(f"Expected: {file_size}, Received: {len(recvedData)}")
-
-        packet = n.temprecv(4096, use_pickle=False)
-        if not packet:
+    while True :
+        file_size_bytes = n.temprecv(4, use_pickle=False)
+        if not file_size_bytes:
             break
+        file_size = int.from_bytes(file_size_bytes, 'big')
 
-        # 종료 신호를 받으면 중단
-        if b"__END__" in packet:
-            packet = packet.replace(b"__END__", b"")
+        recvedData = file_size_bytes #file_size_bytes
+        while len(recvedData) < file_size :
+            packet = n.temprecv(4096, use_pickle=False)
+            if not packet:
+                break
             recvedData += packet
+
+            # 종료 신호를 받으면 중단
+            if b"__END__" in packet:
+                recvedData = recvedData.replace(b"__END__", b"")
+                image_number+=1
+                break
+            
+        try :
+            image = Image.open(io.BytesIO(recvedData)).convert('RGB')
+            img = pygame.image.fromstring(image.tobytes(), image.size, image.mode)
+            recvedImg.append(img)
+            print(f"Total Img : {len(recvedImg)}")
+        except Exception as e :
+            print(e)
+            with open(f"recvedimg_{image_number}.png", 'wb') as f :
+                f.write(recvedData)
+
+        done_signal = n.temprecv(8, use_pickle=False)
+        if done_signal == b"Img_Done" :
+            print("Every Img Recieved")
             break
-        recvedData += packet
 
-    print(f"Expected: {file_size}, Received: {len(recvedData)}")
-
-    image = Image.open(io.BytesIO(recvedData)).convert('RGB')
-    img = pygame.image.fromstring(image.tobytes(), image.size, image.mode)
+    imagesName = n.temprecv(4096, use_pickle=True)
+    for i in range(len(imagesName)) :
+        imagesName[i] = imagesName[i].replace("Multiplayer/images\\", "")
+    print(imagesName)
 
     run = True
-    while run :
+    while run : # GAME DISPLAY!!!
         # Recv Part
 
         recved = n.recv(ClientPISend)
-        # GotPInfo, GotOInfo = recved['self'], recved['other']
+        GotPInfo, GotOInfo = recved['self'], recved['other']
 
         # print(GotPInfo)
 
-        win.blit(img, (0, 0))
-
-        # for i in GotOInfo :
-        #     if (i['message'][1]!="") :
-        #         print(f"Player : {i['message'][1]}")
+        for i in GotOInfo :
+            if (i['message'][1]!="") :
+                print(f"Player : {i['message'][1]}")
 
         for event in pygame.event.get() :
             if event.type == pygame.QUIT :
@@ -85,21 +97,31 @@ def main() :
 
         # Sending Part
 
-        # PK = PygameSYS.keyPress()
-        # if ("Kt" in PK) :
-        #     threading.Thread(target=g.ChatInput, args=()).start()
-        # if ((PK, int(time.time()*100)/100) not in keyHistory) :
-        #     keyHistory.append((PK, int(time.time()*100)/100))
-        #     ClientPISend['CurrentKey'] = PK
-        # else :
-        #     ClientPISend['CurrentKey'] = []
+        PK = PygameSYS.keyPress()
+        if ("Kt" in PK) :
+            threading.Thread(target=g.ChatInput, args=()).start()
+        if ("AU" in PK) :
+            if (scroll>0) : scroll-=1
+        if ("AD" in PK) :
+            if (scroll<len(GotOInfo)-2) : scroll+=1
+        if ((PK, int(time.time()*100)/100) not in keyHistory) :
+            keyHistory.append((PK, int(time.time()*100)/100))
+            ClientPISend['CurrentKey'] = PK
+        else :
+            ClientPISend['CurrentKey'] = []
 
-        # ClientPISend["message"] = g.GetMess()
+        ClientPISend["message"] = g.GetMess()
 
         # # update code
         pygame.display.update()
-        # keyHistory = SYS.SetTlistSYS(keyHistory, 1)
-        # SYS.DisplayGame(win, recved['self']['SR']['card'])
+        keyHistory = SYS.SetTlistSYS(keyHistory, 1)
+        SYS.DisplayGame(win, GotPInfo['SR']['card'], 0, 0)
+        if (len(GotOInfo)<=3) :
+            for i in range(len(GotOInfo)) :
+                SYS.DisplayGame(win, GotOInfo[i]['showingCard'], 0, 198+198*i)
+        else :
+            for i in range(3) :
+                SYS.DisplayGame(win, GotOInfo[scroll+i]['showingCard'], 0, 198+198*i)
 
 IPtool = input("Input IP : ")
 

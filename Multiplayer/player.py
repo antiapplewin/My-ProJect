@@ -8,7 +8,13 @@ class PygameSYS :
         moves = []
 
         if keys[pygame.K_LEFT] :
-            moves.append("KL")
+            moves.append("AL")
+        if keys[pygame.K_UP] :
+            moves.append("AU")
+        if keys[pygame.K_DOWN] :
+            moves.append("AD")
+        if keys[pygame.K_RIGHT] :
+            moves.append("AR")
         if keys[pygame.K_t] :
             moves.append("Kt")
         if keys[pygame.K_r] :
