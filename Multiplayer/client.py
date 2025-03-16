@@ -1,5 +1,5 @@
 import pygame
-import time, io
+import time, io, os
 import threading
 from network import Network
 from player import *
@@ -11,7 +11,7 @@ recvedImg, imagesName = [], []
 
 class SYS :
     def SetTlistSYS(List, ti) :
-        t = int(time.time()*100)/100
+        t = int(time.time()*10)/10
         for i in List :
             if t - i[1] >= ti :
                 List.remove(i)
@@ -30,11 +30,15 @@ class SYS :
 
 def main() :
     global imagesName, recvedImg
+    win.fill((0, 0, 0))
     n = Network(IPtool)
     g = GameSYS()
     ClientP = n.getP()
-    ClientPISend = {'CurrentKey':[], "message":("", 0)}
+    ClientPISend = {'CurrentKey':[], "message":("", 0), "action":()}
     keyHistory, scroll = [], 0
+    font = pygame.font.Font(None, 36)
+    text = font.render(f"Total Pot : 0", True, (255,255,255))
+    avaMove = ['raise', 'bet', 'call', 'all-in', 'all in', 'fold']
 
     image_number = 0
 
@@ -78,14 +82,44 @@ def main() :
     print(imagesName)
 
     run = True
+    timeInput, avaInput = True, True
     while run : # GAME DISPLAY!!!
         # Recv Part
 
         recved = n.recv(ClientPISend)
-        GotPInfo, GotOInfo = recved['self'], recved['other']
+        GotPInfo, GotOInfo, GotSInfo = recved['self'], recved['other'], recved['server']
+
+        if (GotPInfo['Nickname']==f"P{GotSInfo['turn']+1}") :
+            # print(GotSInfo['turn'], ClientPISend['action'])
+            if (timeInput or avaInput) :
+                threading.Thread(target=g.GetAction, args=()).start()
+                timeInput = False
+            ClientPISend['action'] = g.RecvAct()
+
+            try :
+                if (ClientPISend['action'][0] not in avaMove) :
+                    avaInput = True
+                elif (int(ClientPISend['action'][1])) :
+                    pass
+                else :
+                    avaInput = False
+            except ValueError :
+                avaInput = True
+            except :
+                avaInput = False
+        else :
+            ClientPISend['action'] = ()
+            timeInput = True
+            avaInput = True
+
+        try :
+            text = font.render(f"Total Pot : {GotSInfo['Info']['pot']}", True, (255,255,255))
+        except Exception as e :
+            print(e)
 
         # print(GotPInfo)
-
+        if (GotSInfo['mess']!='') :
+            print(GotSInfo['mess'])
         for i in GotOInfo :
             if (i['message'][1]!="") :
                 print(f"Player : {i['message'][1]}")
@@ -104,8 +138,8 @@ def main() :
             if (scroll>0) : scroll-=1
         if ("AD" in PK) :
             if (scroll<len(GotOInfo)-2) : scroll+=1
-        if ((PK, int(time.time()*100)/100) not in keyHistory) :
-            keyHistory.append((PK, int(time.time()*100)/100))
+        if ((PK, int(time.time()*10)/10) not in keyHistory) :
+            keyHistory.append((PK, int(time.time()*10)/10))
             ClientPISend['CurrentKey'] = PK
         else :
             ClientPISend['CurrentKey'] = []
@@ -115,6 +149,8 @@ def main() :
         # # update code
         pygame.display.update()
         keyHistory = SYS.SetTlistSYS(keyHistory, 1)
+        BGIMG = pygame.transform.scale(recvedImg[imagesName.index("BG.png")], (1000, 750))
+        win.blit(BGIMG, (0, 0))
         SYS.DisplayGame(win, GotPInfo['SR']['card'], 0, 0)
         if (len(GotOInfo)<=3) :
             for i in range(len(GotOInfo)) :
@@ -122,6 +158,12 @@ def main() :
         else :
             for i in range(3) :
                 SYS.DisplayGame(win, GotOInfo[scroll+i]['showingCard'], 0, 198+198*i)
+        SYS.DisplayGame(win, GotSInfo['Info']['maincards2'], 530, 277)
+        SYS.DisplayGame(win, GotSInfo['Info']['maincards1'], 550, 297)
+        try :
+            win.blit(text, (540, 100))
+        except :
+            pass
 
 IPtool = input("Input IP : ")
 
