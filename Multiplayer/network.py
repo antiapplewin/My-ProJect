@@ -8,7 +8,7 @@ class Network : # Client <-> server connect chain
         self.server = IPSafe().GetIP(IPtool)
         self.port = 28578
         self.addr = (self.server, self.port)
-        self.p = self.connect()
+        #self.p = self.connect()
         print(self.client)
 
     def getP(self) :
@@ -17,7 +17,6 @@ class Network : # Client <-> server connect chain
     def connect(self) :
         try :
             self.client.connect(self.addr) # connect
-            return pickle.loads(self.client.recv(4096))
         except :
             pass
 

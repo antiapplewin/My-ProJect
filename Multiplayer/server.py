@@ -66,7 +66,8 @@ class ServerClass :
             try :
                 numcardcnt[int(card[1])-2] += 1
             except :
-                if (card[1]=='J') : numcardcnt[9] += 1
+                if (card[1]=='T') :numcardcnt[8]+=1
+                elif (card[1]=='J') : numcardcnt[9] += 1
                 elif (card[1]=='Q') : numcardcnt[10] += 1
                 elif (card[1]=='K') : numcardcnt[11] += 1
                 else : numcardcnt[12] += 1
@@ -188,23 +189,29 @@ def ThreadedClient(conn, player) :
     
     target_folder = "Multiplayer/images"
     img_paths = [os.path.join(target_folder, f) for f in os.listdir(target_folder) if f.endswith(".png")]
-    # print(img_paths)
+    print(img_paths)
 
     for img_path in img_paths :
         file_size = os.path.getsize(img_path)
-        conn.sendall(file_size.to_bytes(4, "big"))
-        # print(f"전송 중: {img_path} ({file_size} bytes)")
+        file_size_byte=file_size.to_bytes(4, "big")
+         
+        print(f"전송 중: {img_path} ({file_size_byte} bytes)")
 
+        #time.sleep(0.1)
+        conn.sendall(file_size_byte) 
+         
         with open(img_path, 'rb') as f :
+             
             while chunk := f.read(4096) :
                 conn.sendall(chunk)
                 # print(chunk[:16])
 
-        conn.sendall(b"__END__")
+        #conn.sendall(b"__END__")
         time.sleep(0.1)
 
+
     time.sleep(0.5)
-    conn.sendall(b"Img_Done")
+    conn.sendall(b"ImgD")
     print("Every IMG Send")
 
     time.sleep(0.5)

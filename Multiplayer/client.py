@@ -33,7 +33,8 @@ def main() :
     win.fill((0, 0, 0))
     n = Network(IPtool)
     g = GameSYS()
-    ClientP = n.getP()
+    n.connect()
+    #ClientP = n.getP()
     ClientPISend = {'CurrentKey':[], "message":("", 0), "action":()}
     keyHistory, scroll = [], 0
     font = pygame.font.Font(None, 36)
@@ -44,11 +45,15 @@ def main() :
 
     while True :
         file_size_bytes = n.temprecv(4, use_pickle=False)
+        if file_size_bytes == b"ImgD" :
+            print("Every Img Recieved")
+            break
         if not file_size_bytes:
             break
         file_size = int.from_bytes(file_size_bytes, 'big')
+        print(file_size,file_size_bytes)
 
-        recvedData = file_size_bytes #file_size_bytes
+        recvedData = b""
         while len(recvedData) < file_size :
             packet = n.temprecv(4096, use_pickle=False)
             if not packet:
@@ -71,14 +76,15 @@ def main() :
             with open(f"recvedimg_{image_number}.png", 'wb') as f :
                 f.write(recvedData)
 
-        done_signal = n.temprecv(8, use_pickle=False)
-        if done_signal == b"Img_Done" :
-            print("Every Img Recieved")
-            break
+        # done_signal = n.temprecv(8, use_pickle=False)
+        # if done_signal == b"ImgD" :
+        #     print("Every Img Recieved")
+        #     break
 
     imagesName = n.temprecv(4096, use_pickle=True)
     for i in range(len(imagesName)) :
         imagesName[i] = imagesName[i].replace("Multiplayer/images\\", "")
+    print(recvedImg)
     print(imagesName)
 
     run = True
