@@ -39,8 +39,9 @@ class ServerClass :
             shape = ["♥️", "♠️", "♦️", "♣️"]
             for sh in shape :
                 self.cards.append(f"A{sh}")
-                for i in range(9) :
+                for i in range(8) :
                     self.cards.append(f"{i+2}{sh}")
+                self.cards.append(f"T{sh}")
                 self.cards.append(f"J{sh}")
                 self.cards.append(f"Q{sh}")
                 self.cards.append(f"K{sh}")
